@@ -1,0 +1,25 @@
+ALTER TABLE `branches` ADD `nameUz` varchar(255);--> statement-breakpoint
+ALTER TABLE `branches` ADD `nameEn` varchar(255);--> statement-breakpoint
+ALTER TABLE `branches` ADD `addressUz` text;--> statement-breakpoint
+ALTER TABLE `branches` ADD `addressEn` text;--> statement-breakpoint
+ALTER TABLE `branches` ADD `workingHoursUz` varchar(255);--> statement-breakpoint
+ALTER TABLE `branches` ADD `workingHoursEn` varchar(255);--> statement-breakpoint
+ALTER TABLE `news` ADD `titleUz` varchar(255);--> statement-breakpoint
+ALTER TABLE `news` ADD `titleEn` varchar(255);--> statement-breakpoint
+ALTER TABLE `news` ADD `contentUz` text;--> statement-breakpoint
+ALTER TABLE `news` ADD `contentEn` text;--> statement-breakpoint
+ALTER TABLE `news` ADD `excerptUz` text;--> statement-breakpoint
+ALTER TABLE `news` ADD `excerptEn` text;--> statement-breakpoint
+ALTER TABLE `pages` ADD `titleUz` varchar(255);--> statement-breakpoint
+ALTER TABLE `pages` ADD `titleEn` varchar(255);--> statement-breakpoint
+ALTER TABLE `pages` ADD `contentUz` text;--> statement-breakpoint
+ALTER TABLE `pages` ADD `contentEn` text;--> statement-breakpoint
+ALTER TABLE `pages` ADD `metaTitleUz` varchar(255);--> statement-breakpoint
+ALTER TABLE `pages` ADD `metaTitleEn` varchar(255);--> statement-breakpoint
+ALTER TABLE `pages` ADD `metaDescriptionUz` text;--> statement-breakpoint
+ALTER TABLE `pages` ADD `metaDescriptionEn` text;--> statement-breakpoint
+ALTER TABLE `products` ADD `titleUz` varchar(255);--> statement-breakpoint
+ALTER TABLE `products` ADD `titleEn` varchar(255);--> statement-breakpoint
+ALTER TABLE `products` ADD `descriptionUz` text;--> statement-breakpoint
+ALTER TABLE `products` ADD `descriptionEn` text;--> statement-breakpoint
+ALTER TABLE `products` ADD `category` varchar(100);

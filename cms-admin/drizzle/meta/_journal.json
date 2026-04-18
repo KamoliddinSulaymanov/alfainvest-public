@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1775932745718,
+      "tag": "0000_whole_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1775933371283,
+      "tag": "0001_lowly_micromax",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775973744266,
+      "tag": "0002_wet_excalibur",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1775974361044,
+      "tag": "0003_products_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1775974562003,
+      "tag": "0004_products_pageblocks",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1775975138000,
+      "tag": "0005_about_page",
+      "breakpoints": true
+    }
+  ]
+}

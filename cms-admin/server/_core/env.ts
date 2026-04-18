@@ -1,0 +1,16 @@
+export const ENV = {
+  cookieSecret: process.env.JWT_SECRET ?? "",
+  databaseUrl: process.env.DATABASE_URL ?? "",
+  adminUsername: process.env.ADMIN_USERNAME ?? "admin",
+  adminPassword: process.env.ADMIN_PASSWORD ?? "",
+  adminName: process.env.ADMIN_NAME ?? "Admin",
+  isProduction: process.env.NODE_ENV === "production",
+  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  umamiUrl: process.env.UMAMI_URL ?? "",
+  umamiUsername: process.env.UMAMI_USERNAME ?? "",
+  umamiPassword: process.env.UMAMI_PASSWORD ?? "",
+  umamiWebsiteId: process.env.UMAMI_WEBSITE_ID ?? "",
+  yandexMapsKey: process.env.YANDEX_MAPS_KEY ?? "",
+  yandexSuggestKey: process.env.YANDEX_SUGGEST_KEY ?? "",
+};

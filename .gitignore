@@ -1,0 +1,48 @@
+# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+
+# ─── Build outputs ───────────────────────────────────────────────────────────
+dist/
+build/
+.next/
+out/
+
+# ─── Environment / secrets ───────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+cms-admin/.env
+
+# ─── OS / editor ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+.manus-logs/
+
+# ─── Test / debug tools ──────────────────────────────────────────────────────
+.playwright-mcp/
+
+# ─── Large binary / media assets not needed in repo ─────────────────────────
+*.pdf
+*.jpeg
+*.jpg
+*.png
+*.gif
+*.mp4
+*.zip
+
+# ─── Claude Code internal ────────────────────────────────────────────────────
+.claude/
+
+# ─── Docker volumes / db data ────────────────────────────────────────────────
+postgres-data/
+redis-data/
+uploads/

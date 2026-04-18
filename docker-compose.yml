@@ -1,0 +1,185 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Alfa Invest — Full Docker Compose Stack
+#
+#  Services:
+#    mysql       — MySQL 8 database for CMS admin
+#    cms-admin   — CMS Admin Panel (Node.js + Express + tRPC)
+#    public-site — Public website (Vite SPA served by Nginx)
+#    postgres    — PostgreSQL 15 database for Umami
+#    umami       — Umami Analytics self-hosted
+#
+#  Ports exposed on host:
+#    3000  → CMS Admin Panel
+#    3001  → Public Website
+#    3002  → Umami Analytics
+#    3306  → MySQL (optional, for external access)
+#    5432  → PostgreSQL (optional, for external access)
+#
+#  Copy .env.example to .env and fill in the values before running.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── MySQL 8 (CMS database) ──────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: alfainvest_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-alfainvest_cms}
+      MYSQL_USER: ${MYSQL_USER:-alfainvest}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - internal
+
+  # ── CMS Admin Panel ─────────────────────────────────────────────────────────
+  cms-admin:
+    build:
+      context: ./cms-admin
+      dockerfile: Dockerfile
+      args:
+        VITE_ANALYTICS_ENDPOINT: ${VITE_ANALYTICS_ENDPOINT:-}
+        VITE_ANALYTICS_WEBSITE_ID: ${VITE_ANALYTICS_WEBSITE_ID:-}
+        VITE_YANDEX_MAPS_KEY: ${VITE_YANDEX_MAPS_KEY:-}
+        VITE_PUBLIC_SITE_URL: ${VITE_PUBLIC_SITE_URL:-http://localhost:3001}
+    container_name: alfainvest_cms_admin
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Database — connects to the mysql service above
+      DATABASE_URL: mysql://${MYSQL_USER:-alfainvest}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-alfainvest_cms}
+      # Auth / Session
+      JWT_SECRET: ${JWT_SECRET}
+      # Initial admin account (created on first startup if no users exist)
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      # Forge APIs (LLM, storage, etc.) — optional
+      BUILT_IN_FORGE_API_URL: ${BUILT_IN_FORGE_API_URL:-}
+      BUILT_IN_FORGE_API_KEY: ${BUILT_IN_FORGE_API_KEY:-}
+      VITE_FRONTEND_FORGE_API_URL: ${VITE_FRONTEND_FORGE_API_URL:-}
+      VITE_FRONTEND_FORGE_API_KEY: ${VITE_FRONTEND_FORGE_API_KEY:-}
+      # Umami — optional, can also be set from Settings page in the admin UI
+      UMAMI_URL: ${UMAMI_URL:-http://umami:3000}
+      UMAMI_USERNAME: ${UMAMI_USERNAME:-}
+      UMAMI_PASSWORD: ${UMAMI_PASSWORD:-}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID:-}
+      # Yandex Maps — server-side proxy for Suggest & Geocode APIs
+      YANDEX_MAPS_KEY: ${YANDEX_MAPS_KEY:-}
+      YANDEX_SUGGEST_KEY: ${YANDEX_SUGGEST_KEY:-}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - internal
+      - external
+
+  # ── Public Website ───────────────────────────────────────────────────────────
+  public-site:
+    build:
+      context: ./public-site
+      dockerfile: Dockerfile
+      args:
+        # Leave empty — Nginx proxies /api/ to cms-admin internally (no CORS)
+        VITE_CMS_URL: ""
+        VITE_YANDEX_MAPS_KEY: ${VITE_YANDEX_MAPS_KEY:-}
+    container_name: alfainvest_public_site
+    restart: unless-stopped
+    depends_on:
+      cms-admin:
+        condition: service_healthy
+    ports:
+      - "3001:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - external
+
+  # ── PostgreSQL 15 (Umami database) ──────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: alfainvest_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-umami}
+      POSTGRES_USER: ${POSTGRES_USER:-umami}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-umami} -d ${POSTGRES_DB:-umami}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - internal
+
+  # ── Umami Analytics ──────────────────────────────────────────────────────────
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: alfainvest_umami
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-umami}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-umami}
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      # Optional: disable telemetry
+      DISABLE_TELEMETRY: 1
+    ports:
+      - "3002:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/heartbeat || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - internal
+      - external
+
+# ── Volumes ───────────────────────────────────────────────────────────────────
+volumes:
+  mysql_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+# ── Networks ──────────────────────────────────────────────────────────────────
+networks:
+  internal:
+    driver: bridge
+    internal: true   # No direct internet access for DB containers
+  external:
+    driver: bridge
